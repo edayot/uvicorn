@@ -53,7 +53,12 @@ def get_client_addr(scope: WWWScope) -> str:
 def get_path_with_query_string(scope: WWWScope) -> str:
     path_with_query_string = urllib.parse.quote(scope["path"])
     if scope["query_string"]:
-        path_with_query_string = "{}?{}".format(
-            path_with_query_string, scope["query_string"].decode("ascii")
-        )
+        query_string = scope["query_string"].decode("ascii")
+        query_params = urllib.parse.parse_qs(query_string)
+        for key, value in query_params.items():
+            if key.lower() == 'password':
+                query_params[key] = ['*' * 8]
+        encoded_query_params = urllib.parse.urlencode(query_params, doseq=True)
+        path_with_query_string = "{}?{}".format(path_with_query_string, encoded_query_params)
+        path_with_query_string = path_with_query_string.replace('%2A', '*')
     return path_with_query_string
